@@ -19,7 +19,7 @@ internal class CollectionPageOrLinkConverter : JsonConverter<ICollectionPageOrLi
                 return type.GetString() switch
                 {
                     "Link" => doc.Deserialize<ILink>(options),
-                    "CollectionPage" => (CollectionPage)doc.Deserialize<IObject>(options),
+                    "CollectionPage" => (CollectionPage?)doc.Deserialize<IObject>(options),
                     _ => throw new JsonException("JSON element was not an CollectionPage or a Link."),
                 };
             }
@@ -30,6 +30,21 @@ internal class CollectionPageOrLinkConverter : JsonConverter<ICollectionPageOrLi
 
     public override void Write(Utf8JsonWriter writer, ICollectionPageOrLink? value, JsonSerializerOptions options)
     {
-        throw new NotImplementedException();
+        if (value is null)
+        {
+            return;
+        }
+        else if (value is ILink)
+        {
+            writer.WriteRawValue(Serialize(value, typeof(ILink), options));
+        }
+        else if (value is CollectionPage)
+        {
+            writer.WriteRawValue(Serialize(value, typeof(CollectionPage), options));
+        }
+        else
+        {
+            writer.WriteRawValue(Serialize(value, typeof(ObjectOrLink), options));
+        }
     }
 }
